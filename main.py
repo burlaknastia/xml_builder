@@ -3,8 +3,6 @@ import typing as t
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 
-xml_expected = """<widget><debug>on</debug><window title="Sample Konfabulator Widget"><name>main_window</name><width>500</width><height>500</height></window><image src="Images/Sun.png" name="sun1"><hOffset>250</hOffset><vOffset>250</vOffset><alignment>center</alignment></image><text data="Click Here" size="36" style="bold"><name>text1</name><hOffset>250</hOffset><vOffset>100</vOffset><alignment>center</alignment><onMouseUp>sun1.opacity = (sun1.opacity / 100) * 90;</onMouseUp></text></widget>"""
-
 example = {
     "widget": {
         "debug": "on",
@@ -102,9 +100,9 @@ def convert_data(data: dict) -> XMLTag:
 def main():
     converted_payload = convert_data(example)
     xml_payload = xml_builder(converted_payload)
-    xml_recieved = ET.tostring(xml_payload).decode()
-    print(xml_recieved)
-    assert len(xml_expected) == len(xml_recieved)
+    xml_received = ET.tostring(xml_payload).decode()
+    print(xml_received)
+
 
 if __name__ == "__main__":
     main()
