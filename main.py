@@ -1,6 +1,8 @@
+import json
+import sys
 import typing as t
-
 import xml.etree.ElementTree as ET
+from argparse import ArgumentParser
 from dataclasses import dataclass, field
 
 example = {
@@ -74,7 +76,8 @@ def convert_data(data: dict) -> XMLTag:
     widget_tag.children.append(debug_tag)
 
     window = widget.get('window')
-    window_tag = create_tag_with_children(window, "window", [("title", window.pop('title', ''))])
+    window_tag = create_tag_with_children(window, "window",
+                                          [("title", window.pop('title', ''))])
     widget_tag.children.append(window_tag)
 
     image = widget.get('image')
@@ -97,11 +100,31 @@ def convert_data(data: dict) -> XMLTag:
     return widget_tag
 
 
+parser = ArgumentParser(description="Convert JSON to xml string. "
+                                    "Use only one option.")
+parser.add_argument('-i', '--input', dest='input', type=json.loads,
+                    help='Convert a JSON string in xml string')
+parser.add_argument('--test', dest='test-sample', action='store_true',
+                    help='Use built-in example for building xml string')
+
+args = parser.parse_args()
+
+
 def main():
-    converted_payload = convert_data(example)
+    payload = vars(args)
+    if payload.get('test-sample') and payload.get('input') is not None:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+    if payload.get('test-sample'):
+        converted_payload = convert_data(example)
+    else:
+        converted_payload = create_tag_with_children(payload['input'],
+                                                     'test_sample')
     xml_payload = xml_builder(converted_payload)
     xml_received = ET.tostring(xml_payload).decode()
-    print(xml_received)
+    # вывод результата
+    sys.stdout.write(xml_received)
+    sys.stdout.write('\n')
 
 
 if __name__ == "__main__":
