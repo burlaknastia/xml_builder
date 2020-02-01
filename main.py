@@ -1,65 +1,51 @@
 import json
 import sys
 import xml.etree.ElementTree as ET
-from argparse import ArgumentParser
+from argparse import ArgumentParser, FileType
 
-from src.helpers import convert_data
-from src.utils import xml_builder, create_tag_with_children
+from src.utils import xml_builder, create_tag
 
-example = {
-    "widget": {
-        "debug": "on",
-        "window": {
-            "title": "Sample Konfabulator Widget",
-            "name": "main_window",
-            "width": 500,
-            "height": 500
-        },
-        "image": {
-            "src": "Images/Sun.png",
-            "name": "sun1",
-            "hOffset": 250,
-            "vOffset": 250,
-            "alignment": "center"
-        },
-        "text": {
-            "data": "Click Here",
-            "size": 36,
-            "style": "bold",
-            "name": "text1",
-            "hOffset": 250,
-            "vOffset": 100,
-            "alignment": "center",
-            "onMouseUp": "sun1.opacity = (sun1.opacity / 100) * 90;"
-        }
-    }}
-
-# TODO: чтение из файла
-parser = ArgumentParser(description="Convert JSON to xml string. "
-                                    "Use only one option.")
-parser.add_argument('-i', '--input', dest='input', type=json.loads,
-                    help='Convert a JSON string in xml string')
-parser.add_argument('--test', dest='test-sample', action='store_true',
-                    help='Use built-in example for building xml string')
+parser = ArgumentParser(description="Convert JSON to XML string. "
+                                    "Use only one input option.")
+parser.add_argument('-a', '--attributes', nargs='*',
+                    help="Array of JSON keys to use as attribute labels in XML")
+parser.add_argument('-i', '--input', type=json.loads,
+                    help='Read a JSON string from console')
+parser.add_argument('-r', '--read', dest='read_file', type=FileType('r'),
+                    help="Read JSON data from file")
+parser.add_argument('-o', '--output',
+                    help="Directs the output to the user's path. Optional "
+                         "argument, you can use '>' instead")
 
 args = parser.parse_args()
 
 
 def main():
-    payload = vars(args)
-    if payload.get('test-sample') and payload.get('input') is not None:
+    if args.read_file is not None and args.input is not None:
         parser.print_help(sys.stderr)
         sys.exit(1)
-    if payload.get('test-sample'):
-        converted_payload = convert_data(example)
+
+    if args.read_file is not None:
+        with args.read_file as file:
+            try:
+                payload = json.load(file)
+            except ValueError as e:
+                sys.stdout.write(e)
+                sys.exit(1)
     else:
-        converted_payload = create_tag_with_children(payload['input'],
-                                                     'test_sample')
+        payload = args.input
+    converted_payload = create_tag(payload, attributes_labels=args.attributes)
+    print(converted_payload)
     xml_payload = xml_builder(converted_payload)
-    xml_received = ET.tostring(xml_payload).decode()
+    built_xml = ET.tostring(xml_payload).decode()
+
     # вывод результата
-    sys.stdout.write(xml_received)
+    if args.output is not None:
+        sys.stdout = open(args.output, 'w')
+    sys.stdout.write(built_xml)
     sys.stdout.write('\n')
+    if args.output is not None:
+        sys.stdout.close()
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ET
 
-from main import create_tag_with_children, XMLTag, xml_builder
+from src.models import XMLTag
+from src.utils import xml_builder, create_tag
 
 """
 Модульные тесты основных функций `create_tag_with_children` 
@@ -13,9 +14,11 @@ def test_create_tag():
     Проверка создания тега типа ``XMLTag``
     """
     payload = {
-        'test_tag': 'tag_value'
+        'sample': {
+            'test_tag': 'tag_value'
+        }
     }
-    xml_tag = create_tag_with_children(payload, "sample")
+    xml_tag = create_tag(payload)
     expected_tag = XMLTag(tag='sample',
                           children=[
                               XMLTag(tag='test_tag', value='tag_value')
@@ -28,14 +31,17 @@ def test_create_tag_with_attr():
     Проверка создания тега типа ``XMLTag`` с атрибутами
     """
     payload = {
-        'test_tag': 'tag_value'
+        'sample': {
+            'test_tag': 'tag_value',
+            'test_attr': 'attr_value'
+        }
     }
-    attrs = [('test_attr', 'attr_value')]
-    xml_tag = create_tag_with_children(payload, "sample", attrs)
+
+    xml_tag = create_tag(payload=payload, attributes_labels=['test_attr'])
     expected_tag = XMLTag(tag='sample',
-                          attrs=attrs,
                           children=[
-                              XMLTag(tag='test_tag',  value='tag_value')
+                              XMLTag(tag='test_tag', value='tag_value',
+                                     attrs=[('test_attr', 'attr_value')],)
                           ])
     assert xml_tag == expected_tag
 
