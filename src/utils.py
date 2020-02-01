@@ -4,10 +4,19 @@ import xml.etree.ElementTree as ET
 from src.models import XMLTag
 
 
+def xml_builder(xml_tag: XMLTag) -> ET.Element:
+    elem = ET.Element(xml_tag.tag)
+    for attr in xml_tag.attrs:
+        elem.set(*attr)
+    for child in xml_tag.children:
+        elem.append(xml_builder(child))
+    elem.text = xml_tag.value
+    return elem
+
+
 def create_tag(payload: t.Union[dict, list],
                label: t.Optional[str] = None,
                attributes_labels: t.Optional[t.List[str]] = None) -> XMLTag:
-
     tags = __create_tag_recursive(payload, attributes_labels)
     if label is not None or isinstance(payload, list):
         payload_tag = XMLTag(tag=label)
@@ -52,13 +61,3 @@ def __get_attributes(attributes_labels: t.List[str],
         if payload.get(attr) is not None:
             attr_values.append((attr, str(payload.pop(attr))))
     return attr_values
-
-
-def xml_builder(xml_tag: XMLTag) -> ET.Element:
-    elem = ET.Element(xml_tag.tag)
-    for attr in xml_tag.attrs:
-        elem.set(*attr)
-    for child in xml_tag.children:
-        elem.append(xml_builder(child))
-    elem.text = xml_tag.value
-    return elem

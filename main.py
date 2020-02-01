@@ -31,19 +31,26 @@ def main():
         parser.print_help(sys.stderr)
         sys.exit(1)
 
+    input_data = None
     if args.read_file is not None:
-        with args.read_file as file:
+        input_data = args.read_file
+    elif args.input is not None:
+        payload = args.input
+    else:
+        input_data = sys.stdin
+
+    if input_data is not None:
+        with input_data as file:
             try:
                 payload = json.load(file)
             except ValueError as e:
                 sys.stdout.write(e)
                 sys.exit(1)
-    else:
-        payload = args.input
 
     label = args.label
     if args.label is None and isinstance(payload, list):
         label = args.read_file.name if args.read_file is not None else "input"
+    # конвертация
     converted_payload = create_tag(payload, label, args.attributes)
     xml_payload = xml_builder(converted_payload)
     # вывод результата
