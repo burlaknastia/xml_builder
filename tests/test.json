@@ -1,0 +1,21 @@
+{
+    "test_sample": {
+        "test": [
+            {
+                "tag1": "value1"
+            },
+            {
+                "tag2": "value2"
+            },
+            {
+                "tag3": [
+                    "value3",
+                    "value4"
+                ]
+            }
+        ],
+        "attr1": "attr1",
+        "attr2": "attr2",
+        "attr3": "attr3"
+    }
+}
